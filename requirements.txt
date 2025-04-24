@@ -9,3 +9,5 @@ deep_sort_realtime
 rich-cli
 ipywidgets
 stqdm
+streamlit-extras
+altair

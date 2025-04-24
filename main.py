@@ -23,9 +23,8 @@ try:
         ],
 
     }
-
+    
     pg = st.navigation(pages)
-
     pg.run()
 
 except Exception as e:

@@ -5,7 +5,7 @@ from typing import Tuple, Union, List, Dict, Literal
 from ultralytics import YOLO # type:ignore
 from tqdm.auto import tqdm # type:ignore
 import torch
-from stqdm import stqdm
+from stqdm import stqdm #type:ignore
 
 class CarCounter:
     def __init__(self, model_path: str = 'yolov8n.pt', verbose: int = 0, streamlit: bool = False):
@@ -30,7 +30,7 @@ class CarCounter:
         return cap
 
     def _init_writer(self, output: str, fps: float, size: Tuple[int,int]) -> cv2.VideoWriter:
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v') # type:ignore
+        fourcc = cv2.VideoWriter_fourcc(*'h264') # type:ignore
         return cv2.VideoWriter(output, fourcc, fps, size)
 
     def _compute_line(self, points: Tuple[Tuple[float,float],Tuple[float,float]],
@@ -164,7 +164,7 @@ class CarCounter:
         iou: float = 0.45,
         tracker_model: Literal['botsort','bytetrack'] = 'botsort',
         green_duration: int = 20,
-        red_duration: int = 5
+        red_duration: int = 5,
     ) -> Tuple[pd.DataFrame, pd.DataFrame, str]:
         """
         Executa detecção+tracking, salva vídeo anotado em `output`.
@@ -217,4 +217,5 @@ class CarCounter:
 
         df       = pd.DataFrame(det_records)
         stats_df = self.compute_stats_from_detections(df)
+        
         return df, stats_df, output

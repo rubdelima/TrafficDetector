@@ -3,8 +3,12 @@ from lib.car_counter import CarCounter
 from lib import utils
 import os
 import uuid
+from app.utils import redirect
 
 video_path = None
+
+#FIXME: Redirect to results page after processing
+redirect()
 
 def free_video_file():
     if video_path is not None:
@@ -62,7 +66,7 @@ if video_file is not None:
                     output=output,
                     conf=conf,
                     iou=iou,
-                    tracker_model=tracker_model, # type: Literal['botsort','bytetrack']
+                    tracker_model=tracker_model, # type:ignore
                     green_duration=green_duration,
                     red_duration=red_duration
                 )
@@ -71,8 +75,8 @@ if video_file is not None:
                 
                 st.success("Processamento concluído!")
                 st.balloons()
+                st.session_state["redirect"] = process_id
+                st.rerun()
                         
     with main_cols[0]:
         st.image(utils.plot_line_image(image,points), caption="Frame Selecionado", use_container_width=False)
-    
-    
