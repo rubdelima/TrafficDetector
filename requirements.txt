@@ -1,0 +1,10 @@
+opencv-python
+streamlit
+numpy
+pandas
+torch
+torchvision
+ultralytics
+deep_sort_realtime
+rich-cli
+ipywidgets
