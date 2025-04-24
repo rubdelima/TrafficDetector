@@ -3,14 +3,15 @@ import random
 import numpy as np
 from typing import Tuple
 
-def select_random_frame(video_path: str) -> np.ndarray:
+def select_random_frame(video: str) -> np.ndarray:
     """
     Abre o vídeo em `video_path` e retorna um frame aleatório (BGR).
     """
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(video)
+    
     if not cap.isOpened():
         cap.release()
-        raise IOError(f"Não foi possível abrir o vídeo: {video_path!r}")
+        raise IOError(f"Não foi possível abrir o vídeo: {video}")
 
     total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 1
     idx   = random.randint(0, total - 1)
@@ -20,8 +21,8 @@ def select_random_frame(video_path: str) -> np.ndarray:
     cap.release()
     if not ret:
         raise ValueError(f"Não conseguiu ler o frame #{idx}")
-
-    return frame
+    
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 def plot_line_image(
     frame: np.ndarray,
@@ -43,5 +44,4 @@ def plot_line_image(
     annotated = frame.copy()
     cv2.line(annotated, p1, p2, (0, 255, 0), 2)
 
-    frame_rgb = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
-    return frame_rgb
+    return annotated

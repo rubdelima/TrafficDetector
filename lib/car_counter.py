@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
 import pandas as pd # type:ignore
-from typing import Tuple, Union, List, Dict
+from typing import Tuple, Union, List, Dict, Literal
 from ultralytics import YOLO # type:ignore
 from tqdm.auto import tqdm # type:ignore
 import torch
+from stqdm import stqdm
 
 class CarCounter:
-    def __init__(self, model_path: str = 'yolov8n.pt', verbose: int = 0):
+    def __init__(self, model_path: str = 'yolov8n.pt', verbose: int = 0, streamlit: bool = False):
         """
         model_path: caminho para pesos YOLOv8
         verbose: nível de log (0 silencia, ≥1 mostra)
@@ -16,6 +17,7 @@ class CarCounter:
         self.fp16    = (self.device != 'cpu')
         self.model   = YOLO(model_path)
         self.verbose = verbose
+        self.tqdm    = stqdm if streamlit else tqdm
 
     def _log(self, msg: str, level: int = 1):
         if self.verbose >= level:
@@ -53,7 +55,7 @@ class CarCounter:
         """
         Processa um único frame:
           - result: saída do model.track()
-          - idx, fps: para timestamp
+          - idx, fps: para time
           - p1, p2: linha de contagem
           - cycle, green_dur, red_dur: semáforo
           - pass_state: dict[id] -> -1/0/1
@@ -101,7 +103,7 @@ class CarCounter:
                     inc_r += 1
 
             det_recs.append({
-                'timestamp': ts,
+                'time': ts,
                 'id': tid,
                 'x1': cx,
                 'y1': cy,
@@ -121,20 +123,20 @@ class CarCounter:
         """
         Reconstrói o DataFrame de estatísticas a partir do df de detecções por id do carro.
         """
-        df = df.sort_values('timestamp')
-        times = df['timestamp'].unique()
-        first_appear = df.groupby('id')['timestamp'].min()
+        df = df.sort_values('time')
+        times = df['time'].unique()
+        first_appear = df.groupby('id')['time'].min()
         events = (
             df[df['pass'] != 0]
-              .sort_values('timestamp')
-              .drop_duplicates('id', keep='first')[['timestamp','pass']]
+              .sort_values('time')
+              .drop_duplicates('id', keep='first')[['time','pass']]
         )
-        green_ct = events[events['pass']==1]['timestamp'].value_counts()
-        red_ct   = events[events['pass']==-1]['timestamp'].value_counts()
+        green_ct = events[events['pass']==1]['time'].value_counts()
+        red_ct   = events[events['pass']==-1]['time'].value_counts()
 
         rows, cum_g, cum_r = [], 0, 0
         for t in times:
-            det     = int((df['timestamp']==t).sum())
+            det     = int((df['time']==t).sum())
             det_tot = int((first_appear <= t).sum())
             g       = int(green_ct.get(t,0))
             r       = int(red_ct.get(t,0))
@@ -160,6 +162,7 @@ class CarCounter:
         output: str = 'output.mp4',
         conf: float = 0.25,
         iou: float = 0.45,
+        tracker_model: Literal['botsort','bytetrack'] = 'botsort',
         green_duration: int = 20,
         red_duration: int = 5
     ) -> Tuple[pd.DataFrame, pd.DataFrame, str]:
@@ -167,7 +170,7 @@ class CarCounter:
         Executa detecção+tracking, salva vídeo anotado em `output`.
 
         Retorna:
-          df: cada detecção ['timestamp','id','x1','y1','pass']
+          df: cada detecção ['time','id','x1','y1','pass']
           stats_df: via compute_stats_from_detections(df)
           output: caminho do arquivo MP4 gerado
         """
@@ -185,9 +188,10 @@ class CarCounter:
 
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
         
+        # https://docs.ultralytics.com/pt/modes/track/#available-trackers
         stream = self.model.track(
             source=video_path,
-            tracker='botsort.yaml',
+            tracker=f'{tracker_model}.yaml',
             stream=True,
             device=self.device,
             half=self.fp16,
@@ -196,7 +200,7 @@ class CarCounter:
             verbose=(self.verbose>=2)
         )
 
-        for idx, result in enumerate(tqdm(stream, total=total, desc="Processing")):
+        for idx, result in enumerate(self.tqdm(stream, total=total, desc="Processing", unit="frame")):
             dets, annotated, dg, dr = self._process_frame(
                 result, idx, fps, p1, p2, cycle,
                 green_duration, pass_state
