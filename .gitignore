@@ -2,3 +2,5 @@
 /markitdown
 .venv
 *yolo*.pt
+*__pycache__*
+.mypy_cache/
