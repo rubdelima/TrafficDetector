@@ -35,7 +35,29 @@ def get_column_ratios(video_path: str) -> List[int]:
     aspect_ratio = width / height
     
     if aspect_ratio < 0.8:
-        return [1, 3]
+        return [2, 6, 1]
     
-    return [1, 1]
+    return [2, 2, 1]
             
+def dowload_container(result_path, hortizontal=True):
+    downloads = [
+        {"icon" : "📹" , "ext" : ".mp4",  "label" : "Download Video (mp4)", "path" : f"{result_path}/video.mp4"},
+        {"icon" : "🔎" , "ext" : ".csv",  "label" : "Download Detecções (csv)", "path" : f"{result_path}/detections.csv"},
+        {"icon" : "📊" , "ext" : ".csv",  "label" : "Download Estatísticas (csv)", "path" : f"{result_path}/stats.csv"},
+        {"icon" : "⚙️" , "ext" : ".json", "label" : "Download Configuração (json)", "path" : f"{result_path}/config.json"},
+    ]
+    
+    cols = st.columns(len(downloads) if hortizontal else 1)
+    
+    for i, download in enumerate(downloads):
+        with cols[i if hortizontal else 0]:
+            st.download_button(
+                label=download["label"],
+                data=open(download["path"], "rb"),
+                file_name=download["label"].replace(" ", "_").lower() + download["ext"],
+                mime="application/octet-stream",
+                use_container_width=True,
+                icon=download["icon"],
+            )
+    
+    
