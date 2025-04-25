@@ -51,5 +51,6 @@ infos : dict[str, str] = {
     "conf" : "Define o limite mínimo de confiança para as detecções. Os objectos detectados com confiança inferior a este limite serão ignorados. O ajuste deste valor pode ajudar a reduzir os falsos positivos.",
     "botsort": "BoT-SORT (Biblioteca de Rastreamento de Objetos) é um tracker que combina detecção, rastreamento e re-identificação. Oferece melhor precisão e é mais robusto em cenas complexas, especialmente com oclusões.",
     "bytetrack": "ByteTrack é um tracker mais leve e eficiente que mantém bom desempenho mesmo com baixa confiança de detecção. É mais rápido que o BoT-SORT mas pode ser menos preciso em cenários complexos."
-
 }
+
+infos["tracker_model"] = infos["botsort"] + '\n' + infos["bytetrack"]

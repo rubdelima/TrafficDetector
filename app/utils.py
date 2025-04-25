@@ -11,10 +11,7 @@ def redirect():
         if st.session_state.redirect is not None:
             result_id = st.session_state.redirect
             st.session_state.redirect = None
-            try:
-                st.switch_page(f"result_{result_id}")
-            except Exception as e:
-                st.error(f"Erro ao redirecionar: {e}")
+            st.switch_page(f"result_{result_id}")
     except:
         st.success(f"Você pode ver os resultados do vídeo {result_id} na aba de resultados.")
 
