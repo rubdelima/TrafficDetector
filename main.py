@@ -12,11 +12,13 @@ try:
 
     from app.show_results import show_results
 
-
     pages = {
         "New Process" : [
             st.Page("app/process_video.py", title="Novo Processamento de Video", icon="📹", url_path="new", default=True),
         ],
+        "Result Example" : [
+            
+        ], 
         "Results" : [
             st.Page(lambda : show_results(entry.name), title=entry.name, icon="📊", url_path=f"result_{entry.name}")
             for entry in os.scandir(".videos") if entry.is_dir()

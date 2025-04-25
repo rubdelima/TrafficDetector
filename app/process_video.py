@@ -4,6 +4,7 @@ from lib import utils
 import os
 import uuid
 from app.utils import redirect
+import json
 
 video_path = None
 
@@ -72,6 +73,16 @@ if video_file is not None:
                 )
                 df.to_csv(f".videos/{process_id}/detections.csv", index=False)
                 stats.to_csv(f".videos/{process_id}/stats.csv", index=False)
+                
+                with open(f".videos/{process_id}/config.json", "w") as f:
+                    json.dump({
+                        "points": points,
+                        "conf": conf,
+                        "iou": iou,
+                        "tracker_model": tracker_model,
+                        "green_duration": green_duration,
+                        "red_duration": red_duration
+                    }, f, indent=4)
                 
                 st.success("Processamento concluído!")
                 st.balloons()
